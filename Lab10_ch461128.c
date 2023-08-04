@@ -2,49 +2,38 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Trie structure
 struct Trie
 {
-    char data;
     int endWord;
     struct Trie *children[26];
 };
 
-// Creates a new TrieNode
-struct Trie *createNode(char data)
+struct Trie *createNode()
 {
     struct Trie *newNode = (struct Trie *)malloc(sizeof(struct Trie));
-    newNode->data = data;
     newNode->endWord = 0;
-
     for (int i = 0; i < 26; i++)
     {
         newNode->children[i] = NULL;
     }
-
     return newNode;
 }
 
-// Inserts the word to the trie structure
 void insert(struct Trie *pTrie, char *word)
 {
     struct Trie *curr = pTrie;
-
     for (int i = 0; word[i] != '\0'; i++)
     {
         int index = word[i] - 'a';
         if (curr->children[index] == NULL)
         {
-            curr->children[index] = createNode(word[i]);
+            curr->children[index] = createNode();
         }
-
         curr = curr->children[index];
     }
-
-    curr->endWord = 1; // Mark the last node as the end of the word
+    curr->endWord = 1;
 }
 
-// Computes the number of occurrences of the word
 int numberOfOccurrences(struct Trie *pTrie, char *word)
 {
     struct Trie *curr = pTrie;
@@ -59,28 +48,26 @@ int numberOfOccurrences(struct Trie *pTrie, char *word)
         amt++;
         curr = curr->children[index];
     }
-
     return amt;
 }
 
-// Deallocates the trie structure
-void deallocateTrie(struct Trie *pTrie)
+struct Trie *deallocateTrie(struct Trie *pTrie)
 {
     if (pTrie == NULL)
     {
-        return;
+        return NULL;
     }
     for (int i = 0; i < 26; i++)
     {
         deallocateTrie(pTrie->children[i]);
     }
     free(pTrie);
+    return NULL;
 }
 
-// Initializes a trie structure
 struct Trie *createTrie()
 {
-    return createNode('\0');
+    return createNode();
 }
 
 int readDictionary(char *filename, char ***pInWords)
@@ -106,9 +93,7 @@ int readDictionary(char *filename, char ***pInWords)
 
     while (fgets(buffer, sizeof(buffer), file))
     {
-
         buffer[strcspn(buffer, "\n")] = '\0';
-
         (*pInWords)[numWords] = (char *)malloc(strlen(buffer) + 1);
         if ((*pInWords)[numWords] == NULL)
         {
@@ -116,9 +101,7 @@ int readDictionary(char *filename, char ***pInWords)
             fclose(file);
             return numWords;
         }
-
         strcpy((*pInWords)[numWords], buffer);
-
         numWords++;
 
         if (numWords == maxWords)
@@ -142,6 +125,13 @@ int main(void)
 {
     char **inWords = NULL;
 
+    inWords = (char **)malloc(256 * sizeof(char *));
+    if (inWords == NULL)
+    {
+        printf("Memory allocation error.\n");
+        return 1;
+    }
+
     int numWords = readDictionary("dictionary.txt", &inWords);
     for (int i = 0; i < numWords; ++i)
     {
@@ -160,7 +150,7 @@ int main(void)
         printf("\t%s : %d\n", pWords[i], numberOfOccurrences(pTrie, pWords[i]));
     }
 
-    deallocateTrie(pTrie);
+    pTrie = deallocateTrie(pTrie);
 
     for (int i = 0; i < numWords; ++i)
     {
