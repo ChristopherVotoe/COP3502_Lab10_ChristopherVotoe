@@ -48,7 +48,7 @@ void insert(struct Trie *pTrie, char *word)
 int numberOfOccurrences(struct Trie *pTrie, char *word)
 {
     struct Trie *curr = pTrie;
-    int amt = 0;
+    int amt = 1;
     for (int i = 0; word[i] != '\0'; i++)
     {
         int index = word[i] - 'a';
@@ -56,11 +56,11 @@ int numberOfOccurrences(struct Trie *pTrie, char *word)
         {
             return 0;
         }
-        curr->endWord++;
+        amt++;
         curr = curr->children[index];
     }
 
-    return curr->endWord;
+    return amt;
 }
 
 // Deallocates the trie structure
@@ -80,11 +80,9 @@ void deallocateTrie(struct Trie *pTrie)
 // Initializes a trie structure
 struct Trie *createTrie()
 {
-    return createNode('\0'); // Root node has a null character as data
+    return createNode('\0');
 }
 
-// This function will return the number of words in the dictionary,
-// and read all the words in the dictionary to the structure words
 int readDictionary(char *filename, char ***pInWords)
 {
     FILE *file = fopen(filename, "r");
@@ -96,7 +94,7 @@ int readDictionary(char *filename, char ***pInWords)
 
     int numWords = 0;
     char buffer[256];
-    int maxWords = 256; // Maximum number of words
+    int maxWords = 256;
 
     *pInWords = (char **)malloc(maxWords * sizeof(char *));
     if (*pInWords == NULL)
@@ -108,10 +106,9 @@ int readDictionary(char *filename, char ***pInWords)
 
     while (fgets(buffer, sizeof(buffer), file))
     {
-        // Remove the newline character at the end
+
         buffer[strcspn(buffer, "\n")] = '\0';
 
-        // Allocate memory for the word
         (*pInWords)[numWords] = (char *)malloc(strlen(buffer) + 1);
         if ((*pInWords)[numWords] == NULL)
         {
@@ -124,7 +121,6 @@ int readDictionary(char *filename, char ***pInWords)
 
         numWords++;
 
-        // Resize the array if necessary
         if (numWords == maxWords)
         {
             maxWords *= 2;
@@ -144,9 +140,8 @@ int readDictionary(char *filename, char ***pInWords)
 
 int main(void)
 {
-    char **inWords = NULL; // Pointer to store the array of words
+    char **inWords = NULL;
 
-    // Read the number of words in the dictionary
     int numWords = readDictionary("dictionary.txt", &inWords);
     for (int i = 0; i < numWords; ++i)
     {
@@ -159,22 +154,19 @@ int main(void)
         insert(pTrie, inWords[i]);
     }
 
-    // Parse line by line, and insert each word to the trie data structure
     char *pWords[] = {"notaword", "ucf", "no", "note", "corg"};
     for (int i = 0; i < 5; i++)
     {
         printf("\t%s : %d\n", pWords[i], numberOfOccurrences(pTrie, pWords[i]));
     }
 
-    // Deallocate the Trie
     deallocateTrie(pTrie);
 
-    // Free the memory for the words in the inWords array
     for (int i = 0; i < numWords; ++i)
     {
         free(inWords[i]);
     }
-    free(inWords); // Free the array of words
+    free(inWords);
 
     return 0;
 }
